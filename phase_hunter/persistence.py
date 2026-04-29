@@ -270,8 +270,6 @@ def maybe_write_trial_structure(
         if write_counts.get(int(sg), 0) >= int(derived.write_limit_per_sg):
             return PersistResult(poscar_path=None)
 
-    write_counts[int(sg)] = write_counts.get(int(sg), 0) + 1
-
     subdir = "structures_by_sg" if (derived.write_all_trial_structures or derived.write_per_sg_structures) else "hit_structures_by_sg"
     folder = Path(out_dir) / subdir / f"sg{int(sg):03d}"
     fname = _safe_filename(f"trial{int(trial_id):08d}_{kind}_{label}_sg{int(sg)}")
@@ -362,6 +360,8 @@ def maybe_write_trial_structure(
             "reduction": _json_safe(asdict(reduction_data)),
         }
         metadata_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    write_counts[int(sg)] = write_counts.get(int(sg), 0) + 1
 
     return PersistResult(
         poscar_path=str(path),
