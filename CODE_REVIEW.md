@@ -1,24 +1,27 @@
 # 代码审查报告（2026-04-29）
 
 ## 结论
-当前仓库存在阻断级问题：主入口脚本在默认仓库布局下无法启动，导致整个扫描流程不可执行。
+当前主入口的“依赖 fail-fast”设计没有按预期生效：在给出友好依赖提示前，程序会先因模块顶层导入失败而直接中断。
 
 ## 关键问题
 
-### 1) 入口导入路径与仓库布局不一致（阻断）
-- 文件 `run_phase_hunter.py` 使用 `from phase_hunter.xxx import ...` 形式导入。 
-- 但仓库根目录当前并不存在 `phase_hunter/` 包目录，模块文件直接位于仓库根目录。
-- 在默认环境下执行 `python -c "import run_phase_hunter"` 会抛出 `ModuleNotFoundError: No module named 'phase_hunter'`。
+### 1) 依赖检查函数被顶层导入顺序绕过（阻断）
+- `run_phase_hunter.py` 在主流程中调用 `check_required_dependencies()`，意图在扫描前统一检查 `numpy/scipy/spglib/seekpath` 并给出可读报错。
+- 但 `phase_hunter/config.py` 顶层已执行 `import numpy as np`，因此只要环境缺少 `numpy`，程序会在 `import run_phase_hunter` 阶段直接抛出 `ModuleNotFoundError`，根本到不了 `check_required_dependencies()`。
+- 这使得当前“集中 fail-fast + 统一提示”的实现失效。
+
+**复现**：
+- 命令：`python -c "import run_phase_hunter"`
+- 结果：在 `phase_hunter/config.py` 顶层 `import numpy as np` 处报 `ModuleNotFoundError: No module named 'numpy'`。
 
 **影响**：
-- 无法进入 CLI、配置构建或扫描主循环；属于启动即失败。
+- 主入口无法按设计输出统一依赖诊断；对用户来说是“启动即崩溃”，错误信息不一致且不可控。
 
-**建议修复方向（任选其一）**：
-1. 调整仓库结构：将现有模块移动到 `phase_hunter/` 目录，并保留包初始化文件；或
-2. 调整导入路径：把 `run_phase_hunter.py` 中绝对导入改为与当前布局一致的导入方式；或
-3. 明确打包/安装流程：若依赖 `pip install -e .` 提供 `phase_hunter` 包名，应补充 `pyproject.toml/setup.py` 与 README 启动说明，并在未安装时给出可读错误提示。
+**建议修复**：
+1. 将 `config.py` 中对 `numpy` 的导入延迟到需要位置（例如网格构建函数内部）；或
+2. 用纯 Python 生成 profile 网格，避免 `config.py` 的顶层第三方依赖；并
+3. 保留 `check_required_dependencies()` 作为唯一统一依赖门禁（确保先进入它，再触发后续重依赖逻辑）。
 
 ## 已执行检查
-- `python -c "import run_phase_hunter"`：失败，报 `ModuleNotFoundError: No module named 'phase_hunter'`。
-- `git status --short`：初始状态无本地改动，随后新增本审查报告文件。
-
+- `python -c "import run_phase_hunter"`：失败（`ModuleNotFoundError: No module named 'numpy'`）。
+- `git status --short`：仅本报告文件发生修改。

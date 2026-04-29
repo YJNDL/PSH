@@ -374,8 +374,6 @@ def apply_cli_overrides(config: ScanConfig, args: Optional[argparse.Namespace]) 
         value = getattr(args, arg_name, None)
         if value is not None:
             updates[field_name] = converter(value)
-    if getattr(args, "reduce_distorted_output_cell", False):
-        updates["reduce_distorted_output_cell"] = True
     if getattr(args, "high_symmetry_kpoint_labels", None):
         updates["high_symmetry_kpoint_labels"] = [
             item.strip()

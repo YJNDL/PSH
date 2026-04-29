@@ -87,14 +87,6 @@ def parse_cli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Do not auto-add Gamma/G when high-symmetry k-point modes are enabled.",
     )
     parser.add_argument(
-        "--reduce-distorted-output-cell",
-        action="store_true",
-        help=(
-            "After applying all trial displacements, try to reduce the distorted output cell "
-            "before writing POSCAR. This is enabled by default in config.py."
-        ),
-    )
-    parser.add_argument(
         "--reduce-distorted-symprec",
         type=float,
         default=None,
