@@ -20,12 +20,12 @@ def parse_cli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         description=f"{PROGRAM_NAME} ({PROGRAM_TAG})",
         epilog=(
             "Examples:\n"
-            "  python this_script.py\n"
-            "  python this_script.py --write-slurm\n"
-            "  python this_script.py --submit-slurm\n"
-            "  python this_script.py --parent-poscar tests/fixtures/POSCAR_cubic --debug --debug-print-plan --debug-stop-after-stage plan\n"
-            "  python this_script.py --debug --debug-print-config --debug-stop-after-stage config\n"
-            "  python this_script.py --debug --debug-no-parallel --debug-max-trials 2"
+            "  python run_phase_hunter.py\n"
+            "  python run_phase_hunter.py --write-slurm\n"
+            "  python run_phase_hunter.py --submit-slurm\n"
+            "  python run_phase_hunter.py --parent-poscar tests/fixtures/POSCAR_cubic --debug --debug-print-plan --debug-stop-after-stage plan\n"
+            "  python run_phase_hunter.py --debug --debug-print-config --debug-stop-after-stage config\n"
+            "  python run_phase_hunter.py --debug --debug-no-parallel --debug-max-trials 2"
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -85,14 +85,6 @@ def parse_cli_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         "--exclude-gamma-high-symmetry",
         action="store_true",
         help="Do not auto-add Gamma/G when high-symmetry k-point modes are enabled.",
-    )
-    parser.add_argument(
-        "--reduce-distorted-output-cell",
-        action="store_true",
-        help=(
-            "After applying all trial displacements, try to reduce the distorted output cell "
-            "before writing POSCAR. This is enabled by default in config.py."
-        ),
     )
     parser.add_argument(
         "--reduce-distorted-symprec",
