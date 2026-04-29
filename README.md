@@ -39,6 +39,7 @@ PSH/
     ├── scan_engine.py     # Core single/combo scan execution
     ├── persistence.py     # Output writing: JSONL, CSV, POSCAR, checkpoint
     └── runtime_io.py      # Runtime directory and log management
+    └── ...
 ```
 
 ---
